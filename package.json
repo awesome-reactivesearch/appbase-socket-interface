@@ -1,0 +1,10 @@
+{
+  "name": "appbase-with-socket",
+  "version": "0.0.1",
+  "description": "Interfacing Appbase.io with Socket.io",
+  "dependencies": {
+    "appbase-js": "^0.10.7",
+    "express": "^4.10.2",
+    "socket.io": "^1.4.5"
+  }
+}
