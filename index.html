@@ -1,29 +1,84 @@
 <!doctype html>
 <html>
   <head>
-    <title>Socket.IO chat</title>
+    <title>Appbase.io + Socket.io</title>
     <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
+	#header {
+		background-color:black;
+		color:white;
+		text-align:center;
+		padding:5px;
+	}
+	#nav {
+		line-height:30px;
+		background-color:#eeeeee;
+		height:300px;
+		width:100px;
+		float:left;
+		padding:5px;	      
+	}
+	#section {
+		width:350px;
+		float:left;
+		padding:10px;	 	 
+	}
+	#footer {
+		background-color:#eeeeee;
+		color:white;
+		clear:both;
+		text-align:center;
+	   padding:5px;	 	 
+	}
+
+
+
       body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form input { border: 1; padding: 10px; width: 90%; margin-bottom: .5%; }
       form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
     </style>
+
   </head>
   <body>
-    <ul id="posts"></ul>
-    <form action="">
-		<input id="title" autocomplete="off" />
-		<input id="post" autocomplete="off" />
-		<button>Send</button>
-    </form>
+
+	<div id="header">
+		<h1>Appbase.io + Socket.io</h1>
+	</div>
+
+	<div id="nav">
+		<p id="subcount"></p>
+		<button id="subscribe">Subscribe</button>
+	</div>
+
+	<div id="section">
+		<ul id="posts"></ul>
+		<!--<form action="">
+			Title:<br/>
+			<input id="title" autocomplete="off" /> <br/>
+			Body:<br/>
+			<input id="post" autocomplete="off" />
+			<button>Send</button>
+		</form>-->
+	</div>
+
+	<div id="footer">
+		<form action="">
+			Title:<br/>
+			<input id="title" autocomplete="off" /> <br/>
+			Body:<br/>
+			<input id="post" autocomplete="off" />
+			<button>Send</button>
+		</form>
+	</div>
+
+
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       var socket = io();
+
       $('form').submit(function(){
 		var jsonObject = {
 				"title":$('#title').val(),
@@ -36,9 +91,17 @@
         return false;
       });
 
+	  $("#subscribe").click(function() {
+        socket.emit('subscribe', null);
+	  });
+
       socket.on('blog post', function(msg){
         $('#posts').append($('<li>').text(msg.post));
       });
+
+	  socket.on('subscribecount', function(msg){
+		$('#subcount').text(msg);
+	  });
     </script>
   </body>
 </html>
