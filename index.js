@@ -1,6 +1,10 @@
 var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
+var path = require('path');
+
+var wildcard = require('socketio-wildcard');
+var nsp;
 
 var Appbase = require('appbase-js');
 
@@ -20,12 +24,21 @@ app.get('/', function(req, res){
 
 io.on('connection', function(socket){
 	console.log('a user connected');
+	
+	var middleware = wildcard();
+    nsp = io.of('/sockbase');
+    io.use(middleware);
+    nsp.use(middleware);
+	
+	socket.on('*', function(msg){
+		console.log('on: new post: ' + msg.data[0]);
+	});
 
 
 	socket.on('disconnect', function(){
 		console.log('a user disconnected');
 	});
-
+	
 	socket.on('blog post', function(msg){
 		appbaseRef.index({
 			type: 'pendingpost',
