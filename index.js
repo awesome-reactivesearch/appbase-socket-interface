@@ -6,17 +6,13 @@ var path = require('path');
 var wildcard = require('socketio-wildcard');
 var nsp;
 
-var Appbase = require('appbase-js');
+var sockbase = require('./sockbase');
 
-/* appname, username and password should be changed */
-var appbaseRef = new Appbase({
-	url: 'https://scalr.api.appbase.io',
-	appname: 'AppbaseSocket',
-	username: 'sOvrbqBZI',
-	password: '691444f1-c047-4f42-9f18-86a711f542eb'
-});
-
-var subscribeCount = 0;
+var callbacks = {
+	'subscribe': sockbase.onSubscribe,
+	'blog post': sockbase.onBlogPost,
+	'disconnect': sockbase.onDisconnect
+};
 
 app.get('/', function(req, res){
 	res.sendFile(__dirname + '/index.html');
@@ -32,47 +28,7 @@ io.on('connection', function(socket){
 	
 	socket.on('*', function(msg){
 		console.log('on: new post: ' + msg.data[0]);
-	});
-
-
-	socket.on('disconnect', function(){
-		console.log('a user disconnected');
-	});
-	
-	socket.on('blog post', function(msg){
-		appbaseRef.index({
-			type: 'pendingpost',
-			body: msg
-		}).on('data', function(response){
-			console.log(response);
-		}).on('error', function(error){
-			console.log(error);
-		});
-
-		console.log('new blog post: ' + msg.title);
-	});
-
-	socket.on('subscribe', function(msg){
-		subscribeCount++;
-
-		console.log('subscribe: ' + subscribeCount);
-
-		io.emit('subscribecount', subscribeCount + " subscriber");
-
-
-		appbaseRef.searchStream({
-			type: 'pendingpost',
-			body: {
-				query: {
-					match_all: {}
-				}
-			}
-		}).on('data', function(response) {
-			console.log("searchStream(), new match: ", response);
-	        socket.emit('blog post', response._source);
-		}).on('error', function(error) {
-			console.log("caught a searchStream() error: ", error)
-		});
+		callbacks[msg.data[0]](io, socket, msg.data[0]);
 	});
 });
 
