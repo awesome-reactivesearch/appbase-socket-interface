@@ -36,8 +36,21 @@
 	#messages { list-style-type: none; margin: 0; padding: 0; }
 	#messages li { padding: 5px 10px; }
 	#messages li:nth-child(odd) { background: #eee; }
-	  
-	  
+	
+	
+	#wrap {
+		width:350px;
+		margin:0 auto;
+	}
+	
+	#left_col {
+		float:left;
+		width:125px;
+	}
+	#right_col {
+		float:right;
+		width:125px;
+	}
     </style>
 
   </head>
@@ -49,25 +62,31 @@
 
 	<div id="nav">
 		<p id="subcount"></p>
-		<button id="subscribe">Subscribe</button>
+		<button id="subscribe_approved">Subscribe to Approved Post</button>
+		<p/>
+		<p id="subcount_admin"></p>
+		<button id="subscribe_pending">Subscribe to Pending Post</button>
 	</div>
 
 	<div id="section">
-		<ul id="posts"></ul>
-		<!--<form action="">
-			Title:<br/>
-			<input id="title" autocomplete="off" /> <br/>
-			Body:<br/>
-			<input id="post" autocomplete="off" />
-			<button>Send</button>
-		</form>-->
+		<div id="wrap">
+			<div id="left_col" style="border: 1px solid black">
+				User Dashboard<p/>
+				<ul id="posts" style="border: 1px solid black" width="auto"></ul>
+			</div>
+			<div id="right_col" style="border: 1px solid black">
+				Admin Dashboard<p/>
+				<ul id="pending_posts" style="border: 1px solid black"></ul>
+			</div>
+		</div>
 	</div>
 
 	<div id="footer">
 		<form action="">
 			<select name="role" style="background-color:#ff0000;">
-				<option value="admin">admin</option>
+				<option value="guest">guest</option>
 				<option value="user">user</option>
+				<option value="admin">admin</option>
 			</select>
 			<br/>
 			<br/>
@@ -87,6 +106,7 @@
 
       $('form').submit(function(){
 		var jsonObject = {
+				"role":$("select option:selected").text(),
 				"title":$('#title').val(),
 				"post":$('#post').val()
 			};
@@ -97,8 +117,19 @@
         return false;
       });
 
-	  $("#subscribe").click(function() {
-        socket.emit('subscribe', null);
+	  $("#subscribe_approved").click(function() {
+		var jsonObject = {
+			"role":$("select option:selected").text()
+		};
+			
+        socket.emit('subscribe_approved', jsonObject);
+	  });
+	  
+	  $("#subscribe_pending").click(function(){
+		var jsonObject = {
+			"role":$("select option:selected").text()
+		};
+		socket.emit('subscribe_pending', jsonObject);
 	  });
 
       socket.on('blog post', function(msg){
@@ -107,6 +138,14 @@
 
 	  socket.on('subscribecount', function(msg){
 		$('#subcount').text(msg);
+	  });
+	  
+	  socket.on('failure', function(msg){
+		alert(msg);
+	  });
+	  
+	  socket.on('success', function(msg){
+		alert(msg);
 	  });
     </script>
   </body>

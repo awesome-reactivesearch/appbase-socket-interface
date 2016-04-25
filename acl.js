@@ -15,11 +15,18 @@ Acl.prototype.isAllowed = function(role, model, permission, cb){
 		console.log('isAllowed called');
 		
 		permissions.every(function(element, index, array){
+			
 			if (element[0] === role && element[1] === model && element[2] === permission){
 				cb(true);
 				return false;
 			}
-			else return true;
+			
+			if (index == array.length-1){
+				cb(false);
+				return false;
+			}
+			
+			return true;
 		});
 	}
 

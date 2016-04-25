@@ -27,7 +27,7 @@ acl.addPermission('admin', 'approvedpost', 'read');
 acl.addPermission('admin', 'approvedpost', 'write');
 acl.addPermission('admin', 'approvedpost', 'delete');
 
-acl.addPermission('user', 'pendingpost', 'read');
+
 acl.addPermission('user', 'pendingpost', 'write');
 acl.addPermission('user', 'approvedpost', 'read');
 acl.addPermission('user', 'approvedpost', 'delete');
@@ -36,7 +36,8 @@ acl.addPermission('user', 'approvedpost', 'delete');
 var sockbase = new Sockbase(appbaseRef, acl);
 
 var callbacks = {
-	'subscribe': sockbase.onSubscribe.bind(sockbase),
+	'subscribe_approved': sockbase.onSubscribeApproved.bind(sockbase),
+	'subscribe_pending' : sockbase.onSubscribePending.bind(sockbase),
 	'blog post': sockbase.onBlogPost.bind(sockbase),
 	'disconnect': sockbase.onDisconnect.bind(sockbase)
 };
@@ -64,19 +65,6 @@ io.on('connection', function(socket){
 	
 	socket.on('*', function(msg){
 		callbacks[msg.data[0]](io, socket, msg.data[1]);
-		
-		/*var role = 'role';
-		var model = 'model';
-		var permission = 'permission';
-		
-		acl.isAllowed(role, model, permission, function(result){
-			if (result){
-				console.log('acl success');
-				callbacks[msg.data[0]](io, socket, msg.data[1]);
-			}else{
-				console.log('acl failed');
-			}
-		});*/
 	});
 });
 
