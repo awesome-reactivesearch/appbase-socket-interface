@@ -146,7 +146,7 @@
       });
 	  
 	  socket.on('blog_post_created', function(msg){
-        $('#pending_posts').append($('<li>').text(msg.post));
+        $('#pending_posts').append($('<li>').text('{Title:' + msg.title + ', Post: ' + msg.post + '}'));
       });
 
 	  socket.on('pending_subscribeCount', function(msg){

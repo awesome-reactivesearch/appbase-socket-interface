@@ -17,7 +17,6 @@ Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 	this.acl.isAllowed(role, 'approvedpost', 'read', function(result){
 		if (result){
 			console.log('acl successful');
-			console.log(self.appbaseRef);
 			
 			approved_subscribeCount++;
 
@@ -32,7 +31,6 @@ Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 					}
 				}
 			}).on('data', function(response) {
-				console.log("searchStream(), new match: ", response);
 				socket.emit('blog_post_approved', response._source);
 			}).on('error', function(error) {
 				console.log("caught a searchStream() error: ", error)
@@ -52,7 +50,6 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 	this.acl.isAllowed(role, 'pendingpost', 'read', function(result){
 		if (result){
 			console.log('acl successful');
-			console.log(self.appbaseRef);
 			
 			pending_subscribeCount++;
 
@@ -67,7 +64,6 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 					}
 				}
 			}).on('data', function(response) {
-				console.log("searchStream(), new match: ", response);
 				socket.emit('blog_post_created', response._source);
 			}).on('error', function(error) {
 				console.log("caught a searchStream() error: ", error)
