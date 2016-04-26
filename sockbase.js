@@ -1,6 +1,7 @@
 var appbaseRef = null;
 var acl = null;
-var subscribeCount = 0;
+var pending_subscribeCount = 0;
+var approved_subscribeCount = 0;
 
 
 function Sockbase(appbaseRef, acl){
@@ -13,18 +14,18 @@ Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 	var role = msg.role;
 	
 	var self = this;
-	this.acl.isAllowed(role, 'pendingpost', 'read', function(result){
+	this.acl.isAllowed(role, 'approvedpost', 'read', function(result){
 		if (result){
 			console.log('acl successful');
 			console.log(self.appbaseRef);
 			
-			subscribeCount++;
+			approved_subscribeCount++;
 
-			io.emit('subscribecount', subscribeCount + " subscriber");
+			io.emit('approved_subscribeCount', approved_subscribeCount + " subscriber");
 
 
 			self.appbaseRef.searchStream({
-				type: 'pendingpost',
+				type: 'approvedpost',
 				body: {
 					query: {
 						match_all: {}
@@ -32,7 +33,7 @@ Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 				}
 			}).on('data', function(response) {
 				console.log("searchStream(), new match: ", response);
-				socket.emit('blog post', response._source);
+				socket.emit('blog_post_approved', response._source);
 			}).on('error', function(error) {
 				console.log("caught a searchStream() error: ", error)
 			});
@@ -53,9 +54,9 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 			console.log('acl successful');
 			console.log(self.appbaseRef);
 			
-			subscribeCount++;
+			pending_subscribeCount++;
 
-			io.emit('subscribecount', subscribeCount + " subscriber");
+			io.emit('pending_subscribeCount', pending_subscribeCount + " subscriber");
 
 
 			self.appbaseRef.searchStream({
@@ -67,7 +68,7 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 				}
 			}).on('data', function(response) {
 				console.log("searchStream(), new match: ", response);
-				socket.emit('blog post', response._source);
+				socket.emit('blog_post_created', response._source);
 			}).on('error', function(error) {
 				console.log("caught a searchStream() error: ", error)
 			});
@@ -95,8 +96,47 @@ Sockbase.prototype.onBlogPost = function(io, socket, msg){
 				console.log(error);
 			});
 		
-			socket.emit('success', 'Posted');
-			console.log('new blog post: ' + msg.title);
+			//socket.emit('success', 'Posted');			
+		}else{
+			socket.emit('failure', 'not allowed');
+			console.log('acl failed');
+		}
+	});
+};
+
+Sockbase.prototype.onApprovePost = function(io, socket, msg){
+	var role = msg.role;
+	var self = this;
+	
+	this.acl.isAllowed(role, 'approvedpost', 'write', function(result){
+		if (result){
+			self.appbaseRef.search({
+			  type: 'pendingpost',
+			  body: {
+				query: {
+					match_all: {}
+				}
+			  }
+			}).on('data', function(response) {
+				var total = response.hits.total;
+				var hits = response.hits.hits;
+				
+				hits.forEach(function(element, index, array){					
+					self.appbaseRef.index({
+						type: 'approvedpost',
+						body: element._source
+					}).on('data', function(response){
+						self.appbaseRef.delete({
+							type:'pendingrequest',
+							id: element._id
+						});
+					}).on('error', function(error){
+						console.log(error);
+					});
+				});
+			}).on('error', function(error) {
+				console.log(error)
+			});
 			
 		}else{
 			socket.emit('failure', 'not allowed');

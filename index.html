@@ -61,18 +61,20 @@
 	</div>
 
 	<div id="nav">
-		<p id="subcount"></p>
+		<p id="approved_subcount"></p>
 		<button id="subscribe_approved">Subscribe to Approved Post</button>
 		<p/>
-		<p id="subcount_admin"></p>
+		<p id="pending_subcount"></p>
 		<button id="subscribe_pending">Subscribe to Pending Post</button>
+		<p/>
+		<button id="approve_pending">Approve All Pending Post</button>
 	</div>
 
 	<div id="section">
 		<div id="wrap">
 			<div id="left_col" style="border: 1px solid black">
 				User Dashboard<p/>
-				<ul id="posts" style="border: 1px solid black" width="auto"></ul>
+				<ul id="approved_posts" style="border: 1px solid black" width="auto"></ul>
 			</div>
 			<div id="right_col" style="border: 1px solid black">
 				Admin Dashboard<p/>
@@ -111,7 +113,7 @@
 				"post":$('#post').val()
 			};
 
-        socket.emit('blog post', jsonObject);
+        socket.emit('on_blog_post', jsonObject);
         $('#title').val('');
         $('#post').val('');
         return false;
@@ -131,13 +133,28 @@
 		};
 		socket.emit('subscribe_pending', jsonObject);
 	  });
+	  
+	  $("#approve_pending").click(function(){
+		var jsonObject = {
+			"role":$("select option:selected").text()
+		};
+		socket.emit('approve_pending', jsonObject);
+	  });
 
-      socket.on('blog post', function(msg){
-        $('#posts').append($('<li>').text(msg.post));
+      socket.on('blog_post_approved', function(msg){
+        $('#approved_posts').append($('<li>').text('{Title:' + msg.title + ', Post: ' + msg.post + '}'));
+      });
+	  
+	  socket.on('blog_post_created', function(msg){
+        $('#pending_posts').append($('<li>').text(msg.post));
       });
 
-	  socket.on('subscribecount', function(msg){
-		$('#subcount').text(msg);
+	  socket.on('pending_subscribeCount', function(msg){
+		$('#pending_subcount').text(msg);
+	  });
+	  
+	  socket.on('approved_subscribeCount', function(msg){
+		$('#approved_subcount').text(msg);
 	  });
 	  
 	  socket.on('failure', function(msg){

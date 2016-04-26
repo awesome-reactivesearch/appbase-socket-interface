@@ -38,7 +38,8 @@ var sockbase = new Sockbase(appbaseRef, acl);
 var callbacks = {
 	'subscribe_approved': sockbase.onSubscribeApproved.bind(sockbase),
 	'subscribe_pending' : sockbase.onSubscribePending.bind(sockbase),
-	'blog post': sockbase.onBlogPost.bind(sockbase),
+	'on_blog_post': sockbase.onBlogPost.bind(sockbase),
+	'approve_pending': sockbase.onApprovePost.bind(sockbase),
 	'disconnect': sockbase.onDisconnect.bind(sockbase)
 };
 
