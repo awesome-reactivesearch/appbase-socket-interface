@@ -2,16 +2,10 @@ var app = require('express')();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
+var config = require('./config').config;
 
-var Appbase = require('appbase-js');
 
-/* appname, username and password should be changed */
-var appbaseRef = new Appbase({
-	url: 'https://scalr.api.appbase.io',
-	appname: 'AppbaseSocket',
-	username: 'sOvrbqBZI',
-	password: '691444f1-c047-4f42-9f18-86a711f542eb'
-});
+var appbaseRef = config();
 
 var wildcard = require('socketio-wildcard');
 var nsp;
