@@ -2,6 +2,9 @@
 <html>
   <head>
     <title>Appbase.io + Socket.io</title>
+	
+	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
+	
     <style>
 	#header {
 		background-color:black;
@@ -17,11 +20,6 @@
 		float:left;
 		padding:5px;	      
 	}
-	#section {
-		width:350px;
-		float:left;
-		padding:10px;	 	 
-	}
 	#footer {
 		background-color:#eeeeee;
 		color:white;
@@ -36,21 +34,6 @@
 	#messages { list-style-type: none; margin: 0; padding: 0; }
 	#messages li { padding: 5px 10px; }
 	#messages li:nth-child(odd) { background: #eee; }
-	
-	
-	#wrap {
-		width:350px;
-		margin:0 auto;
-	}
-	
-	#left_col {
-		float:left;
-		width:125px;
-	}
-	#right_col {
-		float:right;
-		width:125px;
-	}
     </style>
 
   </head>
@@ -70,16 +53,15 @@
 		<button id="approve_pending">Approve All Pending Post</button>
 	</div>
 
-	<div id="section">
-		<div id="wrap">
-			<div id="left_col" style="border: 1px solid black">
-				User Dashboard<p/>
-				<ul id="approved_posts" style="border: 1px solid black" width="auto"></ul>
-			</div>
-			<div id="right_col" style="border: 1px solid black">
-				Admin Dashboard<p/>
-				<ul id="pending_posts" style="border: 1px solid black"></ul>
-			</div>
+	<div id="section" class="ui-grid-a">
+		<div id="left_col" class="ui-block-a">
+			<a class="ui-btn ui-corner-all ui-shadow">User Dashboard</a><br>
+			<ul id="approved_posts" style="border: 1px solid black" width="auto"></ul>
+		</div>
+
+		<div id="right_col" class="ui-block-b">
+			<a class="ui-btn ui-corner-all ui-shadow">Admin Dashboard</a><br>
+			<ul id="pending_posts" style="border: 1px solid black"></ul>
 		</div>
 	</div>
 
