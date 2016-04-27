@@ -123,7 +123,7 @@ Sockbase.prototype.onApprovePost = function(io, socket, msg){
 						body: element._source
 					}).on('data', function(response){
 						self.appbaseRef.delete({
-							type:'pendingrequest',
+							type:'pendingpost',
 							id: element._id
 						});
 					}).on('error', function(error){
