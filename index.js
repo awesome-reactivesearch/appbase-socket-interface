@@ -43,21 +43,15 @@ var callbacks = {
 	'disconnect': sockbase.onDisconnect.bind(sockbase)
 };
 
-var aclCheckList = {
-	'subscribe': {
-		'role': 'admin',
-		'model': 'pendingpost',
-		'permission': 'read'
-	}
-};
-
-
 app.get('/', function(req, res){
 	res.sendFile(__dirname + '/index.html');
 });
 
 io.on('connection', function(socket){
 	console.log('a user connected');
+	
+	appbaseRef.index({type: 'pendingpost', body: {} });
+	appbaseRef.index({type: 'approvedpost', body: {} });
 	
 	var middleware = wildcard();
     nsp = io.of('/sockbase');
