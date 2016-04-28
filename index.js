@@ -44,9 +44,6 @@ app.get('/', function(req, res){
 io.on('connection', function(socket){
 	console.log('a user connected');
 	
-	appbaseRef.index({type: 'pendingpost', body: {} });
-	appbaseRef.index({type: 'approvedpost', body: {} });
-	
 	var middleware = wildcard();
     nsp = io.of('/sockbase');
     io.use(middleware);
