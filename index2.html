@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Socket.IO Chat Example</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+	* {
+	  box-sizing: border-box;
+	}
+	
+html {
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+html, input {
+  font-family:
+    "HelveticaNeue-Light",
+    "Helvetica Neue Light",
+    "Helvetica Neue",
+    Helvetica,
+    Arial,
+    "Lucida Grande",
+    sans-serif;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  list-style: none;
+  word-wrap: break-word;
+}
+
+/* Pages */
+
+.pages {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.page {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+}
+
+/* Login Page */
+
+.login.page {
+  background-color: #000;
+}
+
+.login.page .form {
+  height: 100px;
+  margin-top: -100px;
+  position: absolute;
+
+  text-align: center;
+  top: 50%;
+  width: 100%;
+}
+
+.login.page .form .usernameInput {
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid #fff;
+  outline: none;
+  padding-bottom: 15px;
+  text-align: center;
+  width: 400px;
+}
+
+.login.page .title {
+  font-size: 200%;
+}
+
+.login.page .usernameInput {
+  font-size: 200%;
+  letter-spacing: 3px;
+}
+
+.login.page .title, .login.page .usernameInput {
+  color: #fff;
+  font-weight: 100;
+}
+
+/* Chat page */
+
+
+/* Font */
+
+.messages {
+  font-size: 150%;
+}
+
+.inputMessage {
+  font-size: 100%;
+}
+
+.log {
+  color: gray;
+  font-size: 70%;
+  margin: 5px;
+  text-align: center;
+}
+
+/* Messages */
+
+.chatArea {
+  height: 100%;
+  padding-bottom: 60px;
+}
+
+.messages {
+  height: 100%;
+  margin: 0;
+  overflow-y: scroll;
+  padding: 10px 20px 10px 20px;
+}
+
+.message.typing .messageBody {
+  color: gray;
+}
+
+.username {
+  font-weight: 700;
+  overflow: hidden;
+  padding-right: 15px;
+  text-align: right;
+}
+
+/* Input */
+
+.inputMessage {
+  border: 10px solid #000;
+  bottom: 0;
+  height: 60px;
+  left: 0;
+  outline: none;
+  padding-left: 10px;
+  position: absolute;
+  right: 0;
+  width: 100%;
+}
+
+.postForm {
+  border: 10px solid #000;
+  bottom: 0;
+  left: 0;
+  outline: none;
+  padding-left: 10px;
+  position: fixed;
+  right: 0;
+  width: 100%;
+}
+
+form input {
+border: 1; 
+padding: 10px; 
+width: 90%; 
+margin-bottom: .5%; 
+}
+
+form button { 
+width: 9%; 
+background: rgb(130, 224, 255); 
+border: none; 
+padding: 10px; 
+}
+
+#messages { 
+list-style-type: none; 
+margin: 0; 
+padding: 0; 
+}
+
+#messages li { padding: 5px 10px; }
+#messages li:nth-child(odd) { background: #eee; }
+
+#header {
+	background-color:black;
+	color:white;
+	text-align:center;
+	padding:5px;
+}
+
+#nav {
+		line-height:30px;
+		background-color:#eeeeee;
+		height:100%;
+		width:100px;
+		float:left;
+		padding:5px;	      
+	}
+  </style>
+</head>
+<body>
+	<div id="header">
+		<h1>Appbase.io + Socket.io</h1>
+	</div>
+	<div id="footer">
+  <ul class="pages">
+    <li class="chat page">
+		<div id="nav">
+			<p id="approved_subcount"></p>
+			<button id="subscribe_approved">Subscribe to Approved Post</button>
+			<p/>
+			<p id="pending_subcount"></p>
+			<button id="subscribe_pending">Subscribe to Pending Post</button>
+			<p/>
+			<button id="approve_pending">Approve All Pending Post</button>
+		</div>
+		
+      <div class="chatArea">
+        <ul class="messages">
+		<li> abadf </li>
+		<li>dfadsgadf </li>
+		<li>dfasdgaewrew</li>
+		</ul>
+      </div>
+	  <form class="postForm" action="">
+			<br/>
+			Title:<br/>
+			<input id="title" autocomplete="off" /> <br/>
+			Body:<br/>
+			<input id="post" autocomplete="off" />
+			<button>Send</button>
+		</form>
+      
+    </li>
+    <li class="login page">
+      <div class="form">
+        <h3 class="title">Select your role</h3>
+        <select name="role">
+			<option value="admin">admin</option>
+			<option value="user">user</option>
+			<option value="guest">guest</option>
+		</select>
+		<button id="loginButton">Login</button>
+      </div>
+    </li>
+  </ul>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/main.js"></script>
+    <script>
+      var socket = io();
+	  
+	  $('#loginButton').click(function(){
+		var jsonObject={
+						"role":$("select option:selected").text()
+					};
+					
+		socket.emit('login', jsonObject);
+	  });
+
+      $('form').submit(function(){
+		var jsonObject = {
+				"role":$("select option:selected").text(),
+				"title":$('#title').val(),
+				"post":$('#post').val()
+			};
+
+        socket.emit('on_blog_post', jsonObject);
+        $('#title').val('');
+        $('#post').val('');
+        return false;
+      });
+
+	  $("#subscribe_approved").click(function() {
+		var jsonObject = {
+			"role":$("select option:selected").text()
+		};
+			
+        socket.emit('subscribe_approved', jsonObject);
+	  });
+	  
+	  $("#subscribe_pending").click(function(){
+		var jsonObject = {
+			"role":$("select option:selected").text()
+		};
+		socket.emit('subscribe_pending', jsonObject);
+	  });
+	  
+	  $("#approve_pending").click(function(){
+		var jsonObject = {
+			"role":$("select option:selected").text()
+		};
+		socket.emit('approve_pending', jsonObject);
+	  });
+	  
+	  socket.on('loggedin', function(msg){
+        $('.login.page').fadeOut();
+      });
+
+      socket.on('blog_post_approved', function(msg){
+        $('#approved_posts').append($('<li>').text('{Title:' + msg.title + ', Post: ' + msg.post + '}'));
+      });
+	  
+	  socket.on('blog_post_created', function(msg){
+        $('#pending_posts').append($('<li>').text('{Title:' + msg.title + ', Post: ' + msg.post + '}'));
+      });
+
+	  socket.on('pending_subscribeCount', function(msg){
+		$('#pending_subcount').text(msg);
+	  });
+	  
+	  socket.on('approved_subscribeCount', function(msg){
+		$('#approved_subcount').text(msg);
+	  });
+	  
+	  socket.on('failure', function(msg){
+		alert(msg);
+	  });
+	  
+	  socket.on('success', function(msg){
+		alert(msg);
+	  });
+    </script>
+</body>
+</html>

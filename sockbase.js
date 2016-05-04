@@ -10,6 +10,17 @@ function Sockbase(appbaseRef, acl){
 	this.acl = acl;
 }
 
+Sockbase.prototype.onLogin = function(io, socket, msg){
+	var role = msg.role;
+	
+	var jsonObject = {
+		role: role,
+		result: 'true'
+	};
+	
+	socket.emit('loggedin', jsonObject);
+}
+
 Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 	var role = msg.role;
 	

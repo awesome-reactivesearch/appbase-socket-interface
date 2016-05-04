@@ -30,6 +30,7 @@ acl.addPermission('user', 'approvedpost', 'delete');
 var sockbase = new Sockbase(appbaseRef, acl);
 
 var callbacks = {
+	'login': sockbase.onLogin.bind(sockbase),
 	'subscribe_approved': sockbase.onSubscribeApproved.bind(sockbase),
 	'subscribe_pending' : sockbase.onSubscribePending.bind(sockbase),
 	'on_blog_post': sockbase.onBlogPost.bind(sockbase),
@@ -38,7 +39,7 @@ var callbacks = {
 };
 
 app.get('/', function(req, res){
-	res.sendFile(__dirname + '/index.html');
+	res.sendFile(__dirname + '/index2.html');
 });
 
 io.on('connection', function(socket){
