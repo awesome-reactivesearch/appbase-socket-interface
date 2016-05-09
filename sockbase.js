@@ -11,14 +11,26 @@ function Sockbase(appbaseRef, acl){
 }
 
 Sockbase.prototype.onLogin = function(io, socket, msg){
-	var role = msg.role;
+	var role = msg.role;	
+	var self = this;
 	
-	var jsonObject = {
-		role: role,
-		result: 'true'
-	};
-	
-	socket.emit('loggedin', jsonObject);
+	self.appbaseRef.search({
+				type: 'approvedpost',
+				body: {
+					query: {
+						match_all: {}
+					}
+				}
+			}).on('data', function(response) {
+				var hits = response.hits.hits;
+				
+				hits.forEach(function(element, index, array){
+					console.log(element);
+					socket.emit('blog_post_approved', element);
+				});
+			}).on('error', function(error) {
+				console.log("caught a searchStream() error: ", error)
+			});
 }
 
 Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
@@ -42,7 +54,7 @@ Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 					}
 				}
 			}).on('data', function(response) {
-				socket.emit('blog_post_approved', response._source);
+				socket.emit('blog_post_approved', response);
 			}).on('error', function(error) {
 				console.log("caught a searchStream() error: ", error)
 			});
@@ -75,7 +87,14 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 					}
 				}
 			}).on('data', function(response) {
-				socket.emit('blog_post_created', response._source);
+				var isDelete = response._deleted;
+				
+				if (isDelete == null){
+					socket.emit('blog_post_created', response);
+				}
+				else{
+					socket.emit('blog_post_deleted', response);
+				}
 			}).on('error', function(error) {
 				console.log("caught a searchStream() error: ", error)
 			});
@@ -113,33 +132,28 @@ Sockbase.prototype.onBlogPost = function(io, socket, msg){
 
 Sockbase.prototype.onApprovePost = function(io, socket, msg){
 	var role = msg.role;
+	var id = msg.id;
 	var self = this;
+	
+	console.log('request to approved: ' + id);
 	
 	this.acl.isAllowed(role, 'approvedpost', 'write', function(result){
 		if (result){
-			self.appbaseRef.search({
+			self.appbaseRef.get({
 			  type: 'pendingpost',
-			  body: {
-				query: {
-					match_all: {}
-				}
-			  }
+			  id: id,
 			}).on('data', function(response) {
-				var total = response.hits.total;
-				var hits = response.hits.hits;
-				
-				hits.forEach(function(element, index, array){					
-					self.appbaseRef.index({
-						type: 'approvedpost',
-						body: element._source
-					}).on('data', function(response){
-						self.appbaseRef.delete({
-							type:'pendingpost',
-							id: element._id
-						});
-					}).on('error', function(error){
-						console.log(error);
+				console.log(response);
+				self.appbaseRef.index({
+					type: 'approvedpost',
+					body: response._source
+				}).on('data', function(response){
+					self.appbaseRef.delete({
+						type:'pendingpost',
+						id: id
 					});
+				}).on('error', function(error){
+					console.log(error);
 				});
 			}).on('error', function(error) {
 				console.log(error)

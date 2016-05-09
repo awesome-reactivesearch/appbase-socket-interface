@@ -4,8 +4,10 @@
     <title>Appbase.io + Socket.io</title>
 	
 	<link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css">
-	
-    <style>
+	<script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+
+    
+	<style>
 	#header {
 		background-color:black;
 		color:white;
@@ -20,20 +22,44 @@
 		float:left;
 		padding:5px;	      
 	}
-	#footer {
-		background-color:#eeeeee;
-		color:white;
-		clear:both;
-		text-align:center;
-	   padding:5px;	 	 
+	
+	#left_col{
+		width:20%
+	}
+	
+	#right_col{
+		width:80%
+	}
+	
+	#left_col button{
+		width:90%
+	}
+	
+	ul li{
+		list-style: none;
+		background: gray;
+		margin: 2px;
+		border-raius: 5px;
+		padding: 5px;
+	}
+	
+	ul{
+		overflow:hidden; overflow-y:scroll;
+	}
+	
+	.approveMe{
+		float: right;
+		background: yellow;
+	}
+	
+	.approved_mark{
+		float: right;
+		background: green;
 	}
 
-	body { font: 13px Helvetica, Arial; }
-	form input { border: 1; padding: 10px; width: 90%; margin-bottom: .5%; }
+	select { border: 10; padding: 10px; width: 90%; margin-bottom: .5%; }
+	form input { border: 10; padding: 10px; width: 90%; margin-bottom: .5%; }
 	form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-	#messages { list-style-type: none; margin: 0; padding: 0; }
-	#messages li { padding: 5px 10px; }
-	#messages li:nth-child(odd) { background: #eee; }
     </style>
 
   </head>
@@ -42,36 +68,21 @@
 	<div id="header">
 		<h1>Appbase.io + Socket.io</h1>
 	</div>
-
-	<div id="nav">
-		<p id="approved_subcount"></p>
-		<button id="subscribe_approved">Subscribe to Approved Post</button>
+	
+	<div id="role-div" align="center" style="border: 3px solid black">
 		<p/>
-		<p id="pending_subcount"></p>
-		<button id="subscribe_pending">Subscribe to Pending Post</button>
+		<label> Role: </label>
+		<select name="role">
+			<option value="admin">admin</option>
+			<option value="user">user</option>
+			<option value="guest">guest</option>
+		</select>
+	</div>
+	
+	<div id="form-div" style="border: 3px solid black" align="center">
 		<p/>
-		<button id="approve_pending">Approve All Pending Post</button>
-	</div>
-
-	<div id="section" class="ui-grid-a">
-		<div id="left_col" class="ui-block-a">
-			<a class="ui-btn ui-corner-all ui-shadow">User Dashboard</a><br>
-			<ul id="approved_posts" style="border: 1px solid black" width="auto"></ul>
-		</div>
-
-		<div id="right_col" class="ui-block-b">
-			<a class="ui-btn ui-corner-all ui-shadow">Admin Dashboard</a><br>
-			<ul id="pending_posts" style="border: 1px solid black"></ul>
-		</div>
-	</div>
-
-	<div id="footer">
+		<label align="center"> Write Your Post </label>
 		<form action="">
-			<select name="role" style="background-color:#ff0000;">
-				<option value="guest">guest</option>
-				<option value="user">user</option>
-				<option value="admin">admin</option>
-			</select>
 			<br/>
 			<br/>
 			Title:<br/>
@@ -81,12 +92,40 @@
 			<button>Send</button>
 		</form>
 	</div>
+	
+	<p/>
+	<p/>
+	
+	<div id="section" class="ui-grid-a" style="border: 3px solid black">
+		<div id="left_col" class="ui-block-a" align="center">
+			<p id="approved_subcount"></p>
+			<button id="subscribe_approved">Subscribe to Approved Post</button>
+			<p/>
+			<p id="pending_subcount"></p>
+			<button id="subscribe_pending">Subscribe to Pending Post</button>
+			<p/>
+			<button id="approve_pending">Approve All Pending Post</button>
+		</div>
+
+		<div id="right_col" class="ui-block-b">
+			<a class="ui-btn ui-corner-all ui-shadow">Blog Posts</a><br>
+			<ul id="all_posts" style="border: 1px solid black"></ul>
+		</div>
+	</div>
 
 
     <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       var socket = io();
+	  
+	  $( document ).ready(function() {
+		var jsonObject = {
+			"role":$("select option:selected").text()
+		};
+		
+		socket.emit('loggedin', jsonObject);
+	  });
 
       $('form').submit(function(){
 		var jsonObject = {
@@ -122,15 +161,65 @@
 		};
 		socket.emit('approve_pending', jsonObject);
 	  });
+	  
+	  $(".approveMe").on("click", function(){
+		alert(""); 
+	  });
 
-      socket.on('blog_post_approved', function(msg){
-        $('#approved_posts').append($('<li>').text('{Title:' + msg.title + ', Post: ' + msg.post + '}'));
+      socket.on('blog_post_approved', function(response){
+		var id = response._id;
+		var msg = response._source;
+		var text = '{Title:' + msg.title + ', Post: ' + msg.post + '}';
+		
+		var li = document.createElement('li');
+		li.appendChild(document.createTextNode(text));
+		
+		
+		var iDiv = document.createElement('div');
+		iDiv.className = 'approved_mark';
+		
+		iDiv.appendChild(document.createTextNode('Approved'));
+		
+		li.appendChild(iDiv);
+		
+		$('#all_posts').append(li);
+        
       });
 	  
-	  socket.on('blog_post_created', function(msg){
-        $('#pending_posts').append($('<li>').text('{Title:' + msg.title + ', Post: ' + msg.post + '}'));
+	  socket.on('blog_post_created', function(response){
+		var id = response._id;
+		var msg = response._source;
+		var text = '{Title:' + msg.title + ', Post: ' + msg.post + '}';
+		
+		var li = document.createElement('li');
+		li.id = id;
+		li.appendChild(document.createTextNode(text));
+		
+		
+		var iDiv = document.createElement('div');
+		iDiv.className = 'approveMe';
+		
+		iDiv.appendChild(document.createTextNode('Pending'));
+		
+		li.appendChild(iDiv);
+		
+		$(iDiv).on('click', function(){			
+			var jsonObject = {
+				"role":$("select option:selected").text(),
+				"id": id
+			};
+			socket.emit('approve_pending', jsonObject);
+		});
+		
+		$('#all_posts').append(li);
       });
-
+	  
+	  socket.on('blog_post_deleted', function(response){
+		var id = response._id;
+		
+		$('#' + id).remove();
+	  });
+	  
 	  socket.on('pending_subscribeCount', function(msg){
 		$('#pending_subcount').text(msg);
 	  });

@@ -9,6 +9,7 @@ var appbaseRef = config();
 
 var wildcard = require('socketio-wildcard');
 var nsp;
+var role = 'none';
 
 var Sockbase = require('./sockbase');
 var Acl = require('./acl');
@@ -30,7 +31,7 @@ acl.addPermission('user', 'approvedpost', 'delete');
 var sockbase = new Sockbase(appbaseRef, acl);
 
 var callbacks = {
-	'login': sockbase.onLogin.bind(sockbase),
+	'loggedin': sockbase.onLogin.bind(sockbase),
 	'subscribe_approved': sockbase.onSubscribeApproved.bind(sockbase),
 	'subscribe_pending' : sockbase.onSubscribePending.bind(sockbase),
 	'on_blog_post': sockbase.onBlogPost.bind(sockbase),
@@ -39,7 +40,14 @@ var callbacks = {
 };
 
 app.get('/', function(req, res){
-	res.sendFile(__dirname + '/index2.html');
+	res.sendFile(__dirname + '/index.html');
+});
+
+app.get('/dashboard', function(req, res){
+	console.log('role = ' + role);
+	
+	if (role == 'admin' || role == 'user' || role == 'guest')
+	res.sendFile(__dirname + '/dashboard_' + role + '.html');
 });
 
 io.on('connection', function(socket){
