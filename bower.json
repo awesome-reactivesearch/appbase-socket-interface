@@ -1,0 +1,28 @@
+{
+  "name": "appbase-with-socket",
+  "description": "Interfacing Appbase.io with Socket.io",
+  "main": "index.js",
+  "authors": [
+    "Azizul Hakim"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "appbase.io",
+    "socket.io",
+    "ACL",
+    "security"
+  ],
+  "homepage": "https://github.com/azizulhakim/appbase-socket-interface",
+  "moduleType": [],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "^3.3.6"
+  }
+}
