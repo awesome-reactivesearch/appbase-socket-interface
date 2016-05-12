@@ -17,6 +17,7 @@ var Acl = require('./acl');
 
 var acl = new Acl(appbaseRef);
 
+acl.addPermission('admin', 'pendingpost', 'write');
 acl.addPermission('admin', 'pendingpost', 'read');
 acl.addPermission('admin', 'pendingpost', 'delete');
 acl.addPermission('admin', 'approvedpost', 'read');
@@ -37,6 +38,7 @@ var callbacks = {
 	'subscribe_pending': sockbase.onSubscribePending.bind(sockbase),
 	'on_blog_post': sockbase.onBlogPost.bind(sockbase),
 	'approve_pending': sockbase.onApprovePost.bind(sockbase),
+	'move_to_pending': sockbase.onDisapprovePost.bind(sockbase),
 	'disconnect': sockbase.onDisconnect.bind(sockbase)
 };
 

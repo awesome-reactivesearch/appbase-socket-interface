@@ -164,6 +164,7 @@
 
       var li = document.createElement('li');
       li.className = 'list-group-item';
+	  li.id = id;
       li.appendChild(document.createTextNode(text));
 
 
@@ -173,6 +174,14 @@
       iDiv.appendChild(document.createTextNode('Approved'));
 
       li.appendChild(iDiv);
+	  
+	  $(iDiv).on('click', function() {
+        var jsonObject = {
+          "role": $("select option:selected").text(),
+          "id": id
+        };
+        socket.emit('move_to_pending', jsonObject);
+      });
 
       $('#all_posts').append(li);
 
@@ -184,12 +193,13 @@
       var text = '{Title:' + msg.title + ', Post: ' + msg.post + '}';
 
       var li = document.createElement('li');
+	  li.className = 'list-group-item';
       li.id = id;
       li.appendChild(document.createTextNode(text));
 
 
       var iDiv = document.createElement('div');
-      iDiv.className = 'label label-default';
+      iDiv.className = 'dashboard-post label label-warning';
 
       iDiv.appendChild(document.createTextNode('Pending'));
 
@@ -208,7 +218,7 @@
 
     socket.on('blog_post_deleted', function(response) {
       var id = response._id;
-
+	  
       $('#' + id).remove();
     });
 

@@ -54,7 +54,14 @@ Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 					}
 				}
 			}).on('data', function(response) {
-				socket.emit('blog_post_approved', response);
+				var isDelete = response._deleted;
+				
+				if (isDelete == null){
+					socket.emit('blog_post_approved', response);
+				}
+				else{
+					socket.emit('blog_post_deleted', response);
+				}
 			}).on('error', function(error) {
 				console.log("caught a searchStream() error: ", error)
 			});
@@ -150,6 +157,42 @@ Sockbase.prototype.onApprovePost = function(io, socket, msg){
 				}).on('data', function(response){
 					self.appbaseRef.delete({
 						type:'pendingpost',
+						id: id
+					});
+				}).on('error', function(error){
+					console.log(error);
+				});
+			}).on('error', function(error) {
+				console.log(error)
+			});
+			
+		}else{
+			socket.emit('failure', 'not allowed');
+			console.log('acl failed');
+		}
+	});
+};
+
+Sockbase.prototype.onDisapprovePost = function(io, socket, msg){
+	var role = msg.role;
+	var id = msg.id;
+	var self = this;
+	
+	console.log('request to disapprove: ' + id);
+	
+	this.acl.isAllowed(role, 'pendingpost', 'write', function(result){
+		if (result){
+			self.appbaseRef.get({
+			  type: 'approvedpost',
+			  id: id,
+			}).on('data', function(response) {
+				console.log(response);
+				self.appbaseRef.index({
+					type: 'pendingpost',
+					body: response._source
+				}).on('data', function(response){
+					self.appbaseRef.delete({
+						type:'approvedpost',
 						id: id
 					});
 				}).on('error', function(error){
