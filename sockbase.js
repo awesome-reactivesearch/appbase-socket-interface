@@ -187,7 +187,7 @@ Sockbase.prototype.onDisapprovePost = function(io, socket, msg){
 	
 	console.log('request to disapprove: ' + id);
 	
-	this.acl.isAllowed(role, 'pendingpost', 'write', function(result){
+	this.acl.isAllowed(role, 'approvedpost', 'delete', function(result){
 		if (result){
 			self.appbaseRef.get({
 			  type: 'approvedpost',

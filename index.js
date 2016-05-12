@@ -28,7 +28,6 @@ acl.addPermission('admin', 'approvedpost', 'delete');
 
 acl.addPermission('user', 'pendingpost', 'write');
 acl.addPermission('user', 'approvedpost', 'read');
-acl.addPermission('user', 'approvedpost', 'delete');
 
 
 var sockbase = new Sockbase(appbaseRef, acl);
