@@ -39,6 +39,7 @@ var callbacks = {
 	'on_blog_post': sockbase.onBlogPost.bind(sockbase),
 	'approve_pending': sockbase.onApprovePost.bind(sockbase),
 	'move_to_pending': sockbase.onDisapprovePost.bind(sockbase),
+	'delete_post': sockbase.onDeletePost.bind(sockbase),
 	'disconnect': sockbase.onDisconnect.bind(sockbase)
 };
 

@@ -172,7 +172,14 @@
       iDiv.className = 'dashboard-post label label-success';
 
       iDiv.appendChild(document.createTextNode('Approved'));
+	  
+	  var deleteDiv = document.createElement('span');
+      deleteDiv.className = 'dashboard-post label label-danger';
+	  deleteDiv.appendChild(document.createTextNode('Delete'));
 
+	  
+	  li.appendChild(deleteDiv);
+	  li.appendChild(document.createElement('span'));
       li.appendChild(iDiv);
 	  
 	  $(iDiv).on('click', function() {
@@ -181,6 +188,15 @@
           "id": id
         };
         socket.emit('move_to_pending', jsonObject);
+      });
+	  
+	  $(deleteDiv).on('click', function() {
+        var jsonObject = {
+          "role": $("select option:selected").text(),
+          "id": id,
+		  "type": "approvedpost"
+        };
+        socket.emit('delete_post', jsonObject);
       });
 
       $('#all_posts').append(li);
@@ -200,10 +216,16 @@
 
       var iDiv = document.createElement('div');
       iDiv.className = 'dashboard-post label label-warning';
-
       iDiv.appendChild(document.createTextNode('Pending'));
+	  
+	  var deleteDiv = document.createElement('span');
+      deleteDiv.className = 'dashboard-post label label-danger';
+	  deleteDiv.appendChild(document.createTextNode('Delete'));
 
-      li.appendChild(iDiv);
+	  
+	  li.appendChild(deleteDiv);
+      li.appendChild(document.createElement('span'));
+	  li.appendChild(iDiv);
 
       $(iDiv).on('click', function() {
         var jsonObject = {
@@ -211,6 +233,15 @@
           "id": id
         };
         socket.emit('approve_pending', jsonObject);
+      });
+	  
+	  $(deleteDiv).on('click', function() {
+        var jsonObject = {
+          "role": $("select option:selected").text(),
+          "id": id,
+		  "type": "pendingpost"
+        };
+        socket.emit('delete_post', jsonObject);
       });
 
       $('#all_posts').append(li);

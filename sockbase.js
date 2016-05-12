@@ -209,6 +209,32 @@ Sockbase.prototype.onDisapprovePost = function(io, socket, msg){
 	});
 };
 
+Sockbase.prototype.onDeletePost = function(io, socket, msg){
+	var role = msg.role;
+	var id = msg.id;
+	var type = msg.type;
+	var self = this;
+	
+	console.log('request to disapprove: ' + id);
+	
+	this.acl.isAllowed(role, type, 'delete', function(result){
+		if (result){
+			self.appbaseRef.delete({
+			  type: type,
+			  id: id,
+			}).on('data', function(response) {
+				console.log(response);
+				socket.emit('blog_post_deleted', response);
+			}).on('error', function(error) {
+				console.log(error)
+			});
+			
+		}else{
+			socket.emit('failure', 'not allowed');
+			console.log('acl failed');
+		}
+	});
+};
 Sockbase.prototype.onDisconnect = function(io, socket, msg){
 	console.log('a user disconnected');
 };
