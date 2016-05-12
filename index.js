@@ -11,6 +11,7 @@ var appbaseRef = config();
 var wildcard = require('socketio-wildcard');
 var nsp;
 var role = 'none';
+var sessionCount = 0;
 
 var Sockbase = require('./sockbase');
 var Acl = require('./acl');
@@ -56,6 +57,7 @@ app.get('/dashboard', function(req, res) {
 
 app.use(express.static(__dirname));
 
+
 io.on('connection', function(socket) {
 	console.log('a user connected');
 
@@ -64,6 +66,11 @@ io.on('connection', function(socket) {
 	io.use(middleware);
 	nsp.use(middleware);
 
+	var sessionId = 'room' + sessionCount;
+	socket.join(sessionId);
+	io.to(sessionId).emit('joined', sessionId);
+	sessionCount++;
+	
 	socket.on('*', function(msg) {
 		callbacks[msg.data[0]](io, socket, msg.data[1]);
 	});

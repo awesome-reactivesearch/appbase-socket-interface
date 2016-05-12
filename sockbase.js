@@ -115,6 +115,7 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 
 Sockbase.prototype.onBlogPost = function(io, socket, msg){
 	var role = msg.role;
+	var session = msg.session;
 	
 	var self = this;
 	this.acl.isAllowed(role, 'pendingpost', 'write', function(result){
@@ -124,7 +125,13 @@ Sockbase.prototype.onBlogPost = function(io, socket, msg){
 				type: 'pendingpost',
 				body: msg
 			}).on('data', function(response){
-				console.log(response);
+				self.appbaseRef.get({
+					type: 'pendingpost',
+					id: response._id
+				}).on('data', function(response){
+					console.log(response);
+					io.to(session).emit('blog_post_created', response);
+				});
 			}).on('error', function(error){
 				console.log(error);
 			});

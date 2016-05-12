@@ -108,6 +108,7 @@
   <script src="/bower_components/jquery/dist/jquery.js"></script>
   <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
   <script>
+	var sessionid = '';
     var socket = io();
 
     $(document).ready(function() {
@@ -122,7 +123,8 @@
       var jsonObject = {
         "role": $("select option:selected").text(),
         "title": $('#title').val(),
-        "post": $('#post').val()
+        "post": $('#post').val(),
+		"session": sessionid
       };
 
       socket.emit('on_blog_post', jsonObject);
@@ -268,6 +270,10 @@
     socket.on('success', function(msg) {
       alert(msg);
     });
+	
+	socket.on('joined', function(msg){
+		sessionid = msg;
+	});
   </script>
 </body>
 
