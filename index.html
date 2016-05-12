@@ -27,6 +27,11 @@
     .dashboard-post.label {
       float: right;
     }
+
+    .subscribe-info {
+      padding-right: 5px;
+      margin-bottom: 10px;
+    }
   </style>
 
 </head>
@@ -78,24 +83,45 @@
           </div>
         </div>
       </div>
-      <div class="col-md-8">
+      <div class="col-md-4">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h4>Content Dashboard
-              <span>(See all posts)</span>
+            <h4>Moderation Dashboard
+              <span>(moderate pending posts)</span>
             </h4>
           </div>
           <div class="panel-body">
-            <div class="row">
-              <div class="col-md-4">
-                <p id="approved_subcount"></p>
-                <button class="btn btn-info" id="subscribe_approved">Subscribe to Approved Posts</button>
-                <p/>
+            <div class="row subscribe-info">
+              <div class="pull-right">
                 <p id="pending_subcount"></p>
-                <button class="btn btn-info" id="subscribe_pending">Subscribe to Pending Posts</button>
+                <button class="btn btn-info" id="subscribe_pending" align="center">Subscribe to Pending Posts</button>
               </div>
-              <div class="col-md-8">
-                  <ul id="all_posts" class="list-group"></ul>
+            </div>
+            <div class="row">
+              <div>
+                <ul id="all_posts" class="list-group"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>Published Posts
+              <span>(See all published posts)</span>
+            </h4>
+          </div>
+          <div class="panel-body">
+            <div class="row subscribe-info">
+              <div class="pull-right">
+                <p id="approved_subcount"></p>
+                <button class="btn btn-info" id="subscribe_approved">Subscribe to New Posts</button>
+              </div>
+            </div>
+            <div class="row">
+              <div>
+                <ul id="all_published_posts" class="list-group"></ul>
               </div>
             </div>
           </div>
@@ -108,7 +134,7 @@
   <script src="/bower_components/jquery/dist/jquery.js"></script>
   <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
   <script>
-	var sessionid = '';
+    var sessionid = '';
     var socket = io();
 
     $(document).ready(function() {
@@ -124,7 +150,7 @@
         "role": $("select option:selected").text(),
         "title": $('#title').val(),
         "post": $('#post').val(),
-		"session": sessionid
+        "session": sessionid
       };
 
       socket.emit('on_blog_post', jsonObject);
@@ -166,7 +192,7 @@
 
       var li = document.createElement('li');
       li.className = 'list-group-item';
-	  li.id = id;
+      li.id = id;
       li.appendChild(document.createTextNode(text));
 
 
@@ -174,29 +200,29 @@
       iDiv.className = 'dashboard-post label label-success';
 
       iDiv.appendChild(document.createTextNode('Approved'));
-	  
-	  var deleteDiv = document.createElement('span');
-      deleteDiv.className = 'dashboard-post label label-danger';
-	  deleteDiv.appendChild(document.createTextNode('Delete'));
 
-	  
-	  li.appendChild(deleteDiv);
-	  li.appendChild(document.createElement('span'));
+      var deleteDiv = document.createElement('span');
+      deleteDiv.className = 'dashboard-post label label-danger';
+      deleteDiv.appendChild(document.createTextNode('Delete'));
+
+
+      li.appendChild(deleteDiv);
+      li.appendChild(document.createElement('span'));
       li.appendChild(iDiv);
-	  
-	  $(iDiv).on('click', function() {
+
+      $(iDiv).on('click', function() {
         var jsonObject = {
           "role": $("select option:selected").text(),
           "id": id
         };
         socket.emit('move_to_pending', jsonObject);
       });
-	  
-	  $(deleteDiv).on('click', function() {
+
+      $(deleteDiv).on('click', function() {
         var jsonObject = {
           "role": $("select option:selected").text(),
           "id": id,
-		  "type": "approvedpost"
+          "type": "approvedpost"
         };
         socket.emit('delete_post', jsonObject);
       });
@@ -211,7 +237,7 @@
       var text = '{Title:' + msg.title + ', Post: ' + msg.post + '}';
 
       var li = document.createElement('li');
-	  li.className = 'list-group-item';
+      li.className = 'list-group-item';
       li.id = id;
       li.appendChild(document.createTextNode(text));
 
@@ -219,15 +245,15 @@
       var iDiv = document.createElement('div');
       iDiv.className = 'dashboard-post label label-warning';
       iDiv.appendChild(document.createTextNode('Pending'));
-	  
-	  var deleteDiv = document.createElement('span');
-      deleteDiv.className = 'dashboard-post label label-danger';
-	  deleteDiv.appendChild(document.createTextNode('Delete'));
 
-	  
-	  li.appendChild(deleteDiv);
+      var deleteDiv = document.createElement('span');
+      deleteDiv.className = 'dashboard-post label label-danger';
+      deleteDiv.appendChild(document.createTextNode('Delete'));
+
+
+      li.appendChild(deleteDiv);
       li.appendChild(document.createElement('span'));
-	  li.appendChild(iDiv);
+      li.appendChild(iDiv);
 
       $(iDiv).on('click', function() {
         var jsonObject = {
@@ -236,12 +262,12 @@
         };
         socket.emit('approve_pending', jsonObject);
       });
-	  
-	  $(deleteDiv).on('click', function() {
+
+      $(deleteDiv).on('click', function() {
         var jsonObject = {
           "role": $("select option:selected").text(),
           "id": id,
-		  "type": "pendingpost"
+          "type": "pendingpost"
         };
         socket.emit('delete_post', jsonObject);
       });
@@ -251,7 +277,7 @@
 
     socket.on('blog_post_deleted', function(response) {
       var id = response._id;
-	  
+
       $('#' + id).remove();
     });
 
@@ -270,10 +296,10 @@
     socket.on('success', function(msg) {
       alert(msg);
     });
-	
-	socket.on('joined', function(msg){
-		sessionid = msg;
-	});
+
+    socket.on('joined', function(msg) {
+      sessionid = msg;
+    });
   </script>
 </body>
 
