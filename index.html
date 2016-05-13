@@ -190,7 +190,11 @@
       var msg = response._source;
       var text = '{Title:' + msg.title + ', Post: ' + msg.post + '}';
 
-      var li = document.createElement('li');
+      if ( $( "#" + id ).length ) {
+		$('#' + id).remove();
+	  }
+	  
+	  var li = document.createElement('li');
       li.className = 'list-group-item';
       li.id = id;
       li.appendChild(document.createTextNode(text));

@@ -3,6 +3,8 @@ var acl = null;
 var pending_subscribeCount = 0;
 var approved_subscribeCount = 0;
 
+var TABLE_APPROVED_POST = 'approvedpost';
+var TABLE_PENDING_POST = 'pendingpost';
 
 function Sockbase(appbaseRef, acl){
 	console.log('sockbase initialized');
@@ -166,6 +168,16 @@ Sockbase.prototype.onApprovePost = function(io, socket, msg){
 						self.appbaseRef.delete({
 							type:'pendingpost',
 							id: id
+						}).on('data', function(response){
+							socket.emit('blog_post_deleted', response);
+						});
+
+						self.appbaseRef.get({
+							type: 'approvedpost',
+							id: response._id
+						}).on('data', function(response){
+							console.log(response);
+							socket.emit('blog_post_approved', response);
 						});
 					}).on('error', function(error){
 						console.log(error);
@@ -207,7 +219,18 @@ Sockbase.prototype.onDisapprovePost = function(io, socket, msg){
 						self.appbaseRef.delete({
 							type:'approvedpost',
 							id: id
+						}).on('data', function(response){
+							socket.emit('blog_post_deleted', response);
 						});
+						
+						self.appbaseRef.get({
+							type: 'pendingpost',
+							id: response._id
+						}).on('data', function(response){
+							console.log(response);
+							socket.emit('blog_post_created', response);
+						});
+						
 					}).on('error', function(error){
 						console.log(error);
 					});
@@ -241,8 +264,12 @@ Sockbase.prototype.onDeletePost = function(io, socket, msg){
 			  type: type,
 			  id: id,
 			}).on('data', function(response) {
-				console.log(response);
-				socket.emit('blog_post_deleted', response);
+				if (response.found === true){
+					socket.emit('blog_post_deleted', response);
+				}
+				else{
+					socket.emit('failure', 'incorrect id');
+				}
 			}).on('error', function(error) {
 				console.log(error)
 			});
