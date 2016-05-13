@@ -25,7 +25,7 @@ Sockbase.prototype.onLogin = function(io, socket, msg){
 				var hits = response.hits.hits;
 				
 				hits.forEach(function(element, index, array){
-					console.log(element);
+					//console.log(element);
 					socket.emit('blog_post_approved', element);
 				});
 			}).on('error', function(error) {
@@ -130,7 +130,7 @@ Sockbase.prototype.onBlogPost = function(io, socket, msg){
 					id: response._id
 				}).on('data', function(response){
 					console.log(response);
-					io.to(session).emit('blog_post_created', response);
+					socket.emit('blog_post_created', response);
 				});
 			}).on('error', function(error){
 				console.log(error);
@@ -158,17 +158,22 @@ Sockbase.prototype.onApprovePost = function(io, socket, msg){
 			  id: id,
 			}).on('data', function(response) {
 				console.log(response);
-				self.appbaseRef.index({
-					type: 'approvedpost',
-					body: response._source
-				}).on('data', function(response){
-					self.appbaseRef.delete({
-						type:'pendingpost',
-						id: id
+				if (response.found === true){
+					self.appbaseRef.index({
+						type: 'approvedpost',
+						body: response._source
+					}).on('data', function(response){
+						self.appbaseRef.delete({
+							type:'pendingpost',
+							id: id
+						});
+					}).on('error', function(error){
+						console.log(error);
 					});
-				}).on('error', function(error){
-					console.log(error);
-				});
+				}
+				else{
+					socket.emit('failure', 'incorrect id');
+				}
 			}).on('error', function(error) {
 				console.log(error)
 			});
@@ -193,18 +198,23 @@ Sockbase.prototype.onDisapprovePost = function(io, socket, msg){
 			  type: 'approvedpost',
 			  id: id,
 			}).on('data', function(response) {
-				console.log(response);
-				self.appbaseRef.index({
-					type: 'pendingpost',
-					body: response._source
-				}).on('data', function(response){
-					self.appbaseRef.delete({
-						type:'approvedpost',
-						id: id
+				if (response.found === true){
+					console.log(response);
+					self.appbaseRef.index({
+						type: 'pendingpost',
+						body: response._source
+					}).on('data', function(response){
+						self.appbaseRef.delete({
+							type:'approvedpost',
+							id: id
+						});
+					}).on('error', function(error){
+						console.log(error);
 					});
-				}).on('error', function(error){
-					console.log(error);
-				});
+				}
+				else{
+					socket.emit('failure', 'incorrect id');
+				}
 			}).on('error', function(error) {
 				console.log(error)
 			});
@@ -222,7 +232,8 @@ Sockbase.prototype.onDeletePost = function(io, socket, msg){
 	var type = msg.type;
 	var self = this;
 	
-	console.log('request to disapprove: ' + id);
+	console.log('request to delete');
+	console.log(msg);
 	
 	this.acl.isAllowed(role, type, 'delete', function(result){
 		if (result){
