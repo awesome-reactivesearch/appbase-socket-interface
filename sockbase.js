@@ -108,6 +108,24 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 				console.log("caught a searchStream() error: ", error)
 			});
 			
+			
+			self.appbaseRef.search({
+				type: 'pendingpost',
+				body: {
+					query: {
+						match_all: {}
+					}
+				}
+			}).on('data', function(response) {
+				var hits = response.hits.hits;
+				
+				hits.forEach(function(element, index, array){
+					socket.emit('blog_post_created', element);
+				});
+			}).on('error', function(error) {
+				console.log("caught a searchStream() error: ", error)
+			});
+			
 		}else{
 			console.log('acl failed');
 			socket.emit('failure', 'not allowed');
