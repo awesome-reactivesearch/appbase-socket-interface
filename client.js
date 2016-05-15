@@ -8,8 +8,15 @@ $(document).ready(function() {
   $("select").on("change", function() {
     sessionrole = $("select option:selected").text()
     socket.emit('loggedin', {"role": sessionrole});
-    // disable selection once selected.
-    $("#user-role").html('<div><h4><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> '+sessionrole+'</h4></div>')
+    var sessiontext = "";
+    if (sessionrole === "admin")
+      sessiontext = " As an admin, you can create new post submissions and moderate posts by other admins, users and guests."
+    else if (sessionrole === "user")
+      sessiontext = " As a user, you can create new post submissions, see your submissions awaiting moderation and subscribe to published posts."
+    else if (sessionrole === "guest")
+      sessiontext = " As a guest viewer, you can create new post submissions and see published posts."
+    // lock selection
+    $("#user-role").html('<div><h4><span class="glyphicon glyphicon-lock" aria-hidden="true"></span> '+sessionrole+'<span style="font-size:12px;"> '+sessiontext+'</span>'+'</h4></div>')
   })
 });
 
