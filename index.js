@@ -34,7 +34,7 @@ var sockbase = new Sockbase(appbaseRef, acl);
 
 var callbacks = {
 	'loggedin': sockbase.onLogin.bind(sockbase),
-	'subscribe_approved': sockbase.onSubscribeApproved.bind(sockbase),
+	'subscribe_publish': sockbase.onSubscribeApproved.bind(sockbase),
 	'subscribe_pending': sockbase.onSubscribePending.bind(sockbase),
 	'on_blog_post': sockbase.onBlogPost.bind(sockbase),
 	'approve_pending': sockbase.onApprovePost.bind(sockbase),
@@ -69,7 +69,7 @@ io.on('connection', function(socket) {
 	socket.join(sessionId);
 	io.to(sessionId).emit('joined', sessionId);
 	sessionCount++;
-	
+
 	socket.on('*', function(msg) {
 		callbacks[msg.data[0]](io, socket, msg.data[1]);
 	});
