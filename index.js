@@ -13,8 +13,8 @@ var nsp;
 var role = 'none';
 var sessionCount = 0;
 
-var Sockbase = require('./sockbase');
-var Acl = require('./acl');
+var Sockbase = require('./js/sockbase');
+var Acl = require('./js/acl');
 
 var acl = new Acl(appbaseRef);
 
@@ -44,7 +44,7 @@ var callbacks = {
 };
 
 app.get('/', function(req, res) {
-	res.sendFile(__dirname + '/index.html');
+	res.sendFile(__dirname + '/view/index.html');
 });
 
 app.get('/dashboard', function(req, res) {

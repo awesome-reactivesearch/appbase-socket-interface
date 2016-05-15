@@ -1,0 +1,142 @@
+<!doctype html>
+<html>
+
+<head>
+  <title>Appbase.io + Socket.io</title>
+
+  <link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+
+  <style>
+    #header {
+      background-color: #696;
+      color: white;
+      text-align: center;
+      padding: 5px;
+    }
+
+    .dashboard {
+      width: 95%;
+    }
+
+    h2 span,
+    h4 span {
+      font-size: 16px;
+      font-weight: normal;
+    }
+
+    .dashboard-post.label {
+      float: right;
+      cursor: pointer;
+    }
+
+    .subscribe-info {
+      padding-right: 5px;
+      margin-bottom: 10px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+  <div id="header">
+    <h2>Appbase.io + Socket.io,
+      <span>An ACL based content management dashboard</span>
+    </h2>
+  </div>
+
+  <div class="well">
+    <div class="row">
+      <div class="col-md-2">
+        <h4>Pick a user role</h4>
+      </div>
+      <div class="col-md-10">
+        <div id="user-role">
+          <select class="form-control" name="role">
+            <option value="none">none</option>
+            <option value="admin">admin</option>
+            <option value="user">user</option>
+            <option value="guest">guest</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container dashboard">
+    <div class="row">
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>Submit a new post</h4>
+          </div>
+          <div class="panel-body">
+            <form>
+              <div class="form-group">
+                <label>Title</label>
+                <input id="title" class="form-control" autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label>Post</label>
+                <textarea id="post" class="form-control" rows="6" autocomplete="off" /></textarea>
+              </div>
+              <div align="center" style="margin-bottom:10px;">
+                <button type="submit" class="btn btn-success">Submit</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>Moderation Dashboard
+              <span>(moderate pending posts)</span>
+            </h4>
+          </div>
+          <div class="panel-body">
+            <div class="row subscribe-info">
+              <div class="pull-right">
+                <p id="pending_subcount"></p>
+                <button class="btn btn-info" id="subscribe_pending" align="center">Subscribe to Pending Posts</button>
+              </div>
+            </div>
+            <div class="row">
+              <div>
+                <ul id="all_posts" class="list-group"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h4>Published Posts
+            </h4>
+          </div>
+          <div class="panel-body">
+            <div class="row subscribe-info">
+              <div class="pull-right">
+                <p id="publish_subcount"></p>
+                <button class="btn btn-info" id="subscribe_publish">Subscribe to New Posts</button>
+              </div>
+            </div>
+            <div class="row">
+              <div>
+                <ul id="all_published_posts" class="list-group"></ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <script src="/bower_components/jquery/dist/jquery.js"></script>
+  <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+  <script src="js/client.js"></script>
+</body>
+
+</html>
