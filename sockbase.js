@@ -1,7 +1,7 @@
 var appbaseRef = null;
 var acl = null;
-var pending_subscribeCount = 0;
-var approved_subscribeCount = 0;
+var subscribe_pending_count = 0;
+var subscribe_publish_count = 0;
 
 var TABLE_APPROVED_POST = 'approvedpost';
 var TABLE_PENDING_POST = 'pendingpost';
@@ -13,9 +13,9 @@ function Sockbase(appbaseRef, acl){
 }
 
 Sockbase.prototype.onLogin = function(io, socket, msg){
-	var role = msg.role;	
+	var role = msg.role;
 	var self = this;
-	
+
 	self.appbaseRef.search({
 				type: 'approvedpost',
 				body: {
@@ -25,7 +25,7 @@ Sockbase.prototype.onLogin = function(io, socket, msg){
 				}
 			}).on('data', function(response) {
 				var hits = response.hits.hits;
-				
+
 				hits.forEach(function(element, index, array){
 					//console.log(element);
 					socket.emit('blog_post_approved', element);
@@ -37,16 +37,19 @@ Sockbase.prototype.onLogin = function(io, socket, msg){
 
 Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 	var role = msg.role;
-	
+	var session = msg.session;
+
 	var self = this;
 	this.acl.isAllowed(role, 'approvedpost', 'read', function(result){
 		if (result){
 			console.log('acl successful');
-			
-			approved_subscribeCount++;
 
-			io.emit('approved_subscribeCount', approved_subscribeCount + " subscriber");
-
+			subscribe_publish_count++;
+			var subscribers = " subscriber" + ((subscribe_publish_count>1)?"s":"");
+			// approve the publish subscribe
+			io.to(session).emit('subscribe_publish', true);
+			// broadcast the subscription state
+			io.emit('subscribe_publish_count', subscribe_publish_count + subscribers);
 
 			self.appbaseRef.searchStream({
 				type: 'approvedpost',
@@ -57,7 +60,7 @@ Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 				}
 			}).on('data', function(response) {
 				var isDelete = response._deleted;
-				
+
 				if (isDelete == null){
 					socket.emit('blog_post_approved', response);
 				}
@@ -67,7 +70,7 @@ Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 			}).on('error', function(error) {
 				console.log("caught a searchStream() error: ", error)
 			});
-			
+
 		}else{
 			console.log('acl failed');
 			socket.emit('failure', 'not allowed');
@@ -77,16 +80,20 @@ Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 
 Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 	var role = msg.role;
-	
+	var session = msg.session;
+
 	var self = this;
 	this.acl.isAllowed(role, 'pendingpost', 'read', function(result){
 		if (result){
 			console.log('acl successful');
-			
-			pending_subscribeCount++;
 
-			io.emit('pending_subscribeCount', pending_subscribeCount + " subscriber");
+			subscribe_pending_count++;
 
+			var subscribers = " subscriber" + ((subscribe_pending_count>1)?"s":"")
+			// approve the "pending" subscribe
+			io.to(session).emit('subscribe_pending', true)
+			// broadcast the subscription state
+			io.emit('subscribe_pending_count', subscribe_pending_count + subscribers);
 
 			self.appbaseRef.searchStream({
 				type: 'pendingpost',
@@ -97,7 +104,7 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 				}
 			}).on('data', function(response) {
 				var isDelete = response._deleted;
-				
+
 				if (isDelete == null){
 					socket.emit('blog_post_created', response);
 				}
@@ -107,8 +114,8 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 			}).on('error', function(error) {
 				console.log("caught a searchStream() error: ", error)
 			});
-			
-			
+
+
 			self.appbaseRef.search({
 				type: 'pendingpost',
 				body: {
@@ -118,14 +125,14 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 				}
 			}).on('data', function(response) {
 				var hits = response.hits.hits;
-				
+
 				hits.forEach(function(element, index, array){
 					socket.emit('blog_post_created', element);
 				});
 			}).on('error', function(error) {
 				console.log("caught a searchStream() error: ", error)
 			});
-			
+
 		}else{
 			console.log('acl failed');
 			socket.emit('failure', 'not allowed');
@@ -136,7 +143,7 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 Sockbase.prototype.onBlogPost = function(io, socket, msg){
 	var role = msg.role;
 	var session = msg.session;
-	
+
 	var self = this;
 	this.acl.isAllowed(role, 'pendingpost', 'write', function(result){
 		if (result){
@@ -155,8 +162,8 @@ Sockbase.prototype.onBlogPost = function(io, socket, msg){
 			}).on('error', function(error){
 				console.log(error);
 			});
-		
-			//socket.emit('success', 'Posted');			
+
+			//socket.emit('success', 'Posted');
 		}else{
 			socket.emit('failure', 'not allowed');
 			console.log('acl failed');
@@ -168,9 +175,9 @@ Sockbase.prototype.onApprovePost = function(io, socket, msg){
 	var role = msg.role;
 	var id = msg.id;
 	var self = this;
-	
+
 	console.log('request to approved: ' + id);
-	
+
 	this.acl.isAllowed(role, 'approvedpost', 'write', function(result){
 		if (result){
 			self.appbaseRef.get({
@@ -207,7 +214,7 @@ Sockbase.prototype.onApprovePost = function(io, socket, msg){
 			}).on('error', function(error) {
 				console.log(error)
 			});
-			
+
 		}else{
 			socket.emit('failure', 'not allowed');
 			console.log('acl failed');
@@ -219,9 +226,9 @@ Sockbase.prototype.onDisapprovePost = function(io, socket, msg){
 	var role = msg.role;
 	var id = msg.id;
 	var self = this;
-	
+
 	console.log('request to disapprove: ' + id);
-	
+
 	this.acl.isAllowed(role, 'approvedpost', 'delete', function(result){
 		if (result){
 			self.appbaseRef.get({
@@ -240,7 +247,7 @@ Sockbase.prototype.onDisapprovePost = function(io, socket, msg){
 						}).on('data', function(response){
 							socket.emit('blog_post_deleted', response);
 						});
-						
+
 						self.appbaseRef.get({
 							type: 'pendingpost',
 							id: response._id
@@ -248,7 +255,7 @@ Sockbase.prototype.onDisapprovePost = function(io, socket, msg){
 							console.log(response);
 							socket.emit('blog_post_created', response);
 						});
-						
+
 					}).on('error', function(error){
 						console.log(error);
 					});
@@ -259,7 +266,7 @@ Sockbase.prototype.onDisapprovePost = function(io, socket, msg){
 			}).on('error', function(error) {
 				console.log(error)
 			});
-			
+
 		}else{
 			socket.emit('failure', 'not allowed');
 			console.log('acl failed');
@@ -272,10 +279,10 @@ Sockbase.prototype.onDeletePost = function(io, socket, msg){
 	var id = msg.id;
 	var type = msg.type;
 	var self = this;
-	
+
 	console.log('request to delete');
 	console.log(msg);
-	
+
 	this.acl.isAllowed(role, type, 'delete', function(result){
 		if (result){
 			self.appbaseRef.delete({
@@ -291,7 +298,7 @@ Sockbase.prototype.onDeletePost = function(io, socket, msg){
 			}).on('error', function(error) {
 				console.log(error)
 			});
-			
+
 		}else{
 			socket.emit('failure', 'not allowed');
 			console.log('acl failed');

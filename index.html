@@ -113,14 +113,13 @@
         <div class="panel panel-default">
           <div class="panel-heading">
             <h4>Published Posts
-              <span>(See all published posts)</span>
             </h4>
           </div>
           <div class="panel-body">
             <div class="row subscribe-info">
               <div class="pull-right">
-                <p id="approved_subcount"></p>
-                <button class="btn btn-info" id="subscribe_approved">Subscribe to New Posts</button>
+                <p id="publish_subcount"></p>
+                <button class="btn btn-info" id="subscribe_publish">Subscribe to New Posts</button>
               </div>
             </div>
             <div class="row">
@@ -144,7 +143,6 @@
 
     $(document).ready(function() {
       $("select").on("change", function() {
-        console.log("change is coming.")
         sessionrole = $("select option:selected").text()
         socket.emit('loggedin', {"role": sessionrole});
         // disable selection once selected.
@@ -166,27 +164,25 @@
       return false;
     });
 
-    $("#subscribe_approved").click(function() {
+    $("#subscribe_publish").click(function() {
       var jsonObject = {
-        "role": sessionrole
+        "role": sessionrole,
+        "session": sessionid
       };
 
-      socket.emit('subscribe_approved', jsonObject);
+      socket.emit('subscribe_publish', jsonObject);
     });
 
     $("#subscribe_pending").click(function() {
       var jsonObject = {
-        "role": sessionrole
+        "role": sessionrole,
+        "session": sessionid
       };
       socket.emit('subscribe_pending', jsonObject);
     });
 
     $("#approve_pending").click(function() {
       socket.emit('approve_pending', {"role": sessionrole});
-    });
-
-    $(".approveMe").on("click", function() {
-      alert("");
     });
 
     socket.on('blog_post_approved', function(response) {
@@ -293,12 +289,24 @@
       $('#' + id).remove();
     });
 
-    socket.on('pending_subscribeCount', function(msg) {
+    /* successful pending subscription event */
+    socket.on('subscribe_pending', function() {
+      $("#subscribe_pending").removeClass("btn-info").addClass("btn-success").html("<span class='glyphicon glyphicon-ok'></span> Subscribed to Pending Posts");
+    });
+
+    /* broadcast pending subscribe count */
+    socket.on('subscribe_pending_count', function(msg) {
       $('#pending_subcount').text(msg);
     });
 
-    socket.on('approved_subscribeCount', function(msg) {
-      $('#approved_subcount').text(msg);
+    /* successful publish subscription event */
+    socket.on('subscribe_publish', function() {
+      $("#subscribe_publish").removeClass("btn-info").addClass("btn-success").html("<span class='glyphicon glyphicon-ok'></span> Subscribed to Published Posts");
+    });
+
+    /* broadcast publish subscribe count */
+    socket.on('subscribe_publish_count', function(msg) {
+      $('#publish_subcount').text(msg);
     });
 
     socket.on('failure', function(msg) {
