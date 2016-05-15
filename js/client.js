@@ -25,8 +25,7 @@ $('form').submit(function() {
   var jsonObject = {
     "role": sessionrole,
     "title": $('#title').val(),
-    "post": $('#post').val(),
-    "session": sessionid
+    "post": $('#post').val()
   };
 
   socket.emit('on_blog_post', jsonObject);

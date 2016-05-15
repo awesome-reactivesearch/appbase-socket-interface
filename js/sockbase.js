@@ -17,7 +17,7 @@ Sockbase.prototype.onLogin = function(io, socket, msg){
 	var self = this;
 
 	self.appbaseRef.search({
-				type: 'approvedpost',
+				type: TABLE_APPROVED_POST,
 				body: {
 					query: {
 						match_all: {}
@@ -37,22 +37,21 @@ Sockbase.prototype.onLogin = function(io, socket, msg){
 
 Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 	var role = msg.role;
-	var session = msg.session;
 
 	var self = this;
-	this.acl.isAllowed(role, 'approvedpost', 'read', function(result){
+	this.acl.isAllowed(role, TABLE_APPROVED_POST, 'read', function(result){
 		if (result){
 			console.log('acl successful');
 
 			subscribe_publish_count++;
 			var subscribers = " subscriber" + ((subscribe_publish_count>1)?"s":"");
 			// approve the publish subscribe
-			io.to(session).emit('subscribe_publish', true);
+			socket.emit('subscribe_publish', true);
 			// broadcast the subscription state
 			io.emit('subscribe_publish_count', subscribe_publish_count + subscribers);
 
 			self.appbaseRef.searchStream({
-				type: 'approvedpost',
+				type: TABLE_APPROVED_POST,
 				body: {
 					query: {
 						match_all: {}
@@ -80,10 +79,9 @@ Sockbase.prototype.onSubscribeApproved = function(io, socket, msg){
 
 Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 	var role = msg.role;
-	var session = msg.session;
 
 	var self = this;
-	this.acl.isAllowed(role, 'pendingpost', 'read', function(result){
+	this.acl.isAllowed(role, TABLE_PENDING_POST, 'read', function(result){
 		if (result){
 			console.log('acl successful');
 
@@ -91,12 +89,12 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 
 			var subscribers = " subscriber" + ((subscribe_pending_count>1)?"s":"")
 			// approve the "pending" subscribe
-			io.to(session).emit('subscribe_pending', true)
+			socket.emit('subscribe_pending', true)
 			// broadcast the subscription state
 			io.emit('subscribe_pending_count', subscribe_pending_count + subscribers);
 
 			self.appbaseRef.searchStream({
-				type: 'pendingpost',
+				type: TABLE_PENDING_POST,
 				body: {
 					query: {
 						match_all: {}
@@ -117,7 +115,7 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 
 
 			self.appbaseRef.search({
-				type: 'pendingpost',
+				type: TABLE_PENDING_POST,
 				body: {
 					query: {
 						match_all: {}
@@ -142,18 +140,17 @@ Sockbase.prototype.onSubscribePending = function(io, socket, msg){
 
 Sockbase.prototype.onBlogPost = function(io, socket, msg){
 	var role = msg.role;
-	var session = msg.session;
 
 	var self = this;
-	this.acl.isAllowed(role, 'pendingpost', 'write', function(result){
+	this.acl.isAllowed(role, TABLE_PENDING_POST, 'write', function(result){
 		if (result){
 			console.log(msg);
 			self.appbaseRef.index({
-				type: 'pendingpost',
+				type: TABLE_PENDING_POST,
 				body: msg
 			}).on('data', function(response){
 				self.appbaseRef.get({
-					type: 'pendingpost',
+					type: TABLE_PENDING_POST,
 					id: response._id
 				}).on('data', function(response){
 					console.log(response);
@@ -176,27 +173,27 @@ Sockbase.prototype.onApprovePost = function(io, socket, msg){
 
 	console.log('request to approved: ' + id);
 
-	this.acl.isAllowed(role, 'approvedpost', 'write', function(result){
+	this.acl.isAllowed(role, TABLE_APPROVED_POST, 'write', function(result){
 		if (result){
 			self.appbaseRef.get({
-			  type: 'pendingpost',
+			  type: TABLE_PENDING_POST,
 			  id: id,
 			}).on('data', function(response) {
 				console.log(response);
 				if (response.found === true){
 					self.appbaseRef.index({
-						type: 'approvedpost',
+						type: TABLE_APPROVED_POST,
 						body: response._source
 					}).on('data', function(response){
 						self.appbaseRef.delete({
-							type:'pendingpost',
+							type:TABLE_PENDING_POST,
 							id: id
 						}).on('data', function(response){
 							socket.emit('blog_post_deleted', response);
 						});
 
 						self.appbaseRef.get({
-							type: 'approvedpost',
+							type: TABLE_APPROVED_POST,
 							id: response._id
 						}).on('data', function(response){
 							console.log(response);
@@ -227,27 +224,27 @@ Sockbase.prototype.onDisapprovePost = function(io, socket, msg){
 
 	console.log('request to disapprove: ' + id);
 
-	this.acl.isAllowed(role, 'approvedpost', 'delete', function(result){
+	this.acl.isAllowed(role, TABLE_APPROVED_POST, 'delete', function(result){
 		if (result){
 			self.appbaseRef.get({
-			  type: 'approvedpost',
+			  type: TABLE_APPROVED_POST,
 			  id: id,
 			}).on('data', function(response) {
 				if (response.found === true){
 					console.log(response);
 					self.appbaseRef.index({
-						type: 'pendingpost',
+						type: TABLE_PENDING_POST,
 						body: response._source
 					}).on('data', function(response){
 						self.appbaseRef.delete({
-							type:'approvedpost',
+							type:TABLE_APPROVED_POST,
 							id: id
 						}).on('data', function(response){
 							socket.emit('blog_post_deleted', response);
 						});
 
 						self.appbaseRef.get({
-							type: 'pendingpost',
+							type: TABLE_PENDING_POST,
 							id: response._id
 						}).on('data', function(response){
 							console.log(response);
