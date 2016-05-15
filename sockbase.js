@@ -162,8 +162,6 @@ Sockbase.prototype.onBlogPost = function(io, socket, msg){
 			}).on('error', function(error){
 				console.log(error);
 			});
-
-			//socket.emit('success', 'Posted');
 		}else{
 			socket.emit('failure', 'not allowed');
 			console.log('acl failed');
