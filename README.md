@@ -18,7 +18,7 @@ node index.js      # runs an express server at 127.0.0.1:3000
 
 ## How it works
 
-Check out the medium post on how it works - 
+Check out the [medium post on how it works](https://medium.appbase.io/appbase-io-socket-io-79f9388f7131#.3gqj7yk6p).
 
 ## Credits
 
